@@ -7,6 +7,46 @@ import {
   TrackingEvent,
 } from "@/types";
 
+import fs from "fs";
+import path from "path";
+
+// Auto-load .env.local for scripts and background tasks if not already populated
+if (!process.env.MONGODB_URI) {
+  try {
+    const envLocalPath = path.resolve(process.cwd(), ".env.local");
+    const envPath = path.resolve(process.cwd(), ".env");
+    const targetPath = fs.existsSync(envLocalPath)
+      ? envLocalPath
+      : fs.existsSync(envPath)
+      ? envPath
+      : null;
+
+    if (targetPath) {
+      const content = fs.readFileSync(targetPath, "utf-8");
+      for (const line of content.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx > 0) {
+          const key = trimmed.substring(0, eqIdx).trim();
+          let val = trimmed.substring(eqIdx + 1).trim();
+          if (
+            (val.startsWith('"') && val.endsWith('"')) ||
+            (val.startsWith("'") && val.endsWith("'"))
+          ) {
+            val = val.substring(1, val.length - 1);
+          }
+          if (!process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      }
+    }
+  } catch {
+    // Ignore in environments where fs is restricted
+  }
+}
+
 const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017";
 const dbName = process.env.MONGODB_DB || "build60";
 

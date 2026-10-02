@@ -288,69 +288,142 @@ export async function applyPartnerAction(formData: FormData) {
 
 // 3. Admin Login Action
 export async function loginAdminAction(formData: FormData) {
-  const email = (formData.get("email") as string)?.trim().toLowerCase();
-  const password = (formData.get("password") as string)?.trim();
+  try {
+    const email = (formData.get("email") as string)?.trim().toLowerCase();
+    const password = (formData.get("password") as string)?.trim();
 
-  if (!email || !password) {
-    return { success: false, error: "Email and password are required" };
+    if (!email || !password) {
+      return { success: false, error: "Email and password are required" };
+    }
+
+    const usersCol = await getUsersCollection();
+    let user = await usersCol.findOne({ email, role: "ADMIN" });
+
+    // Failsafe: if database is fresh or unseeded, auto-provision default demo admin
+    if (!user && email === "admin@build60.campus" && password === "AdminGrowth2025!") {
+      const passwordHash = await hashPassword("AdminGrowth2025!");
+      const newAdmin = {
+        email: "admin@build60.campus",
+        passwordHash,
+        name: "Campaign Growth Lead",
+        role: "ADMIN" as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const insertRes = await usersCol.insertOne(newAdmin);
+      user = { ...newAdmin, _id: insertRes.insertedId };
+    }
+
+    if (!user) {
+      return { success: false, error: "Invalid admin credentials" };
+    }
+
+    const valid = await verifyPassword(password, user.passwordHash);
+    if (!valid) {
+      return { success: false, error: "Invalid admin credentials" };
+    }
+
+    await setSessionCookie({
+      userId: user._id?.toString() || "",
+      email: user.email,
+      name: user.name,
+      role: "ADMIN",
+    });
+
+    return { success: true };
+  } catch (err: unknown) {
+    console.error("Admin login error:", err);
+    const msg = err instanceof Error ? err.message : "Database connection or authentication error";
+    return {
+      success: false,
+      error: `Login failed: ${msg}. If deployed on Vercel, ensure MongoDB Atlas IP Whitelist allows 0.0.0.0/0 (anywhere) and MONGODB_URI is set in Vercel environment variables.`,
+    };
   }
-
-  const usersCol = await getUsersCollection();
-  const user = await usersCol.findOne({ email, role: "ADMIN" });
-
-  if (!user) {
-    return { success: false, error: "Invalid admin credentials" };
-  }
-
-  const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) {
-    return { success: false, error: "Invalid admin credentials" };
-  }
-
-  await setSessionCookie({
-    userId: user._id?.toString() || "",
-    email: user.email,
-    name: user.name,
-    role: "ADMIN",
-  });
-
-  return { success: true };
 }
 
 // 4. Partner Login Action
 export async function loginPartnerAction(formData: FormData) {
-  const email = (formData.get("email") as string)?.trim().toLowerCase();
-  const password = (formData.get("password") as string)?.trim();
+  try {
+    const email = (formData.get("email") as string)?.trim().toLowerCase();
+    const password = (formData.get("password") as string)?.trim();
 
-  if (!email || !password) {
-    return { success: false, error: "Email and password are required" };
+    if (!email || !password) {
+      return { success: false, error: "Email and password are required" };
+    }
+
+    const usersCol = await getUsersCollection();
+    const partnersCol = await getPartnersCollection();
+    let user = await usersCol.findOne({ email, role: "PARTNER" });
+
+    // Failsafe: if database is fresh or unseeded, auto-provision default demo partner
+    if (!user && email === "lead@northstar.demo" && password === "Partner2025!") {
+      let partner = await partnersCol.findOne({ code: "NS-GDG-42" });
+      if (!partner) {
+        const partnerRes = await partnersCol.insertOne({
+          code: "NS-GDG-42",
+          slug: "northstar-gdg",
+          clubName: "Google Developer Groups on Campus",
+          clubType: "GDG on Campus",
+          collegeName: "Northstar Engineering College",
+          city: "Bengaluru",
+          leadName: "Arjun Verma",
+          email: "lead@northstar.demo",
+          phone: "+91 98765 43210",
+          approximateCommunitySize: 1200,
+          applicationReason: "Our final year students need real project experience before campus placements.",
+          status: "APPROVED",
+          targetRegistrations: 500,
+          isDemo: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        partner = { _id: partnerRes.insertedId, code: "NS-GDG-42" } as unknown as typeof partner;
+      }
+      const passwordHash = await hashPassword("Partner2025!");
+      const newPartnerUser = {
+        email: "lead@northstar.demo",
+        passwordHash,
+        name: "Arjun Verma (Northstar GDG)",
+        role: "PARTNER" as const,
+        partnerId: partner?._id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const userRes = await usersCol.insertOne(newPartnerUser);
+      user = { ...newPartnerUser, _id: userRes.insertedId };
+    }
+
+    if (!user) {
+      return { success: false, error: "Invalid partner credentials. Make sure your club has been approved." };
+    }
+
+    const valid = await verifyPassword(password, user.passwordHash);
+    if (!valid) {
+      return { success: false, error: "Invalid partner credentials" };
+    }
+
+    const partner = user.partnerId
+      ? await partnersCol.findOne({ _id: new ObjectId(user.partnerId as string) })
+      : null;
+
+    await setSessionCookie({
+      userId: user._id?.toString() || "",
+      email: user.email,
+      name: user.name,
+      role: "PARTNER",
+      partnerId: user.partnerId?.toString(),
+      partnerCode: partner?.code,
+    });
+
+    return { success: true };
+  } catch (err: unknown) {
+    console.error("Partner login error:", err);
+    const msg = err instanceof Error ? err.message : "Database connection or authentication error";
+    return {
+      success: false,
+      error: `Login failed: ${msg}. If deployed on Vercel, ensure MongoDB Atlas IP Whitelist allows 0.0.0.0/0 (anywhere) and MONGODB_URI is set in Vercel environment variables.`,
+    };
   }
-
-  const usersCol = await getUsersCollection();
-  const user = await usersCol.findOne({ email, role: "PARTNER" });
-
-  if (!user) {
-    return { success: false, error: "Invalid partner credentials. Make sure your club has been approved." };
-  }
-
-  const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) {
-    return { success: false, error: "Invalid partner credentials" };
-  }
-
-  const partnersCol = await getPartnersCollection();
-  const partner = await partnersCol.findOne({ _id: new ObjectId(user.partnerId as string) });
-
-  await setSessionCookie({
-    userId: user._id?.toString() || "",
-    email: user.email,
-    name: user.name,
-    role: "PARTNER",
-    partnerId: user.partnerId?.toString(),
-    partnerCode: partner?.code,
-  });
-
-  return { success: true };
 }
 
 // 5. Admin Partner Status Update
