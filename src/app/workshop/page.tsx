@@ -1,5 +1,6 @@
 import { getActiveEvent } from "@/lib/events";
 import { getPartnersCollection } from "@/lib/db";
+import { getCanonicalSiteUrl } from "@/lib/site-url";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { RegistrationForm } from "@/components/RegistrationForm";
@@ -26,6 +27,7 @@ export default async function WorkshopPage({
 }) {
   const { ref, studentRef } = await searchParams;
   const event = await getActiveEvent();
+  const siteUrl = await getCanonicalSiteUrl();
 
   // If partner code provided, lookup club details for context banner
   let partnerClubName: string | undefined = undefined;
@@ -63,19 +65,19 @@ export default async function WorkshopPage({
       eventStatus: "https://schema.org/EventScheduled",
       location: {
         "@type": "VirtualLocation",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/workshop`,
+        url: `${siteUrl}/workshop`,
       },
       offers: {
         "@type": "Offer",
         price: "0",
         priceCurrency: "INR",
         availability: "https://schema.org/InStock",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/workshop`,
+        url: `${siteUrl}/workshop`,
       },
       organizer: {
         "@type": "Organization",
         name: "Build60 Campus Community Initiative",
-        url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+        url: siteUrl,
       },
     };
   }

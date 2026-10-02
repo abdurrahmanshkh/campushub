@@ -18,10 +18,8 @@ export async function GET(
   const utmCampaign = searchParams.get("utm_campaign");
   const utmContent = searchParams.get("utm_content");
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
   if (!normalizedCode) {
-    return NextResponse.redirect(new URL("/workshop", siteUrl));
+    return NextResponse.redirect(new URL("/workshop", request.url));
   }
 
   const partnersCol = await getPartnersCollection();
@@ -92,7 +90,7 @@ export async function GET(
   }
 
   // Determine redirect URL
-  const destination = new URL("/workshop", siteUrl);
+  const destination = new URL("/workshop", request.url);
   if (targetPartnerCode) {
     destination.searchParams.set("ref", targetPartnerCode);
     if (targetReferralCode) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useResolvedOrigin } from "@/lib/use-resolved-origin";
 import {
   Copy,
   Check,
@@ -36,9 +37,10 @@ export function CampaignKitInteractive({
   siteUrl,
 }: CampaignKitInteractiveProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const effectiveSiteUrl = useResolvedOrigin(siteUrl);
 
-  const partnerUrl = `${siteUrl}/r/${partnerCode}`;
-  const qrPngUrl = `/api/qr?code=${partnerCode}&format=png`;
+  const partnerUrl = `${effectiveSiteUrl}/r/${partnerCode}`;
+  const qrPngUrl = `/api/qr?code=${partnerCode}&url=${encodeURIComponent(partnerUrl)}&format=png`;
 
   const dateDisplay = eventDate && eventStartTime
     ? `${eventDate} at ${eventStartTime} ${eventTimezone}`

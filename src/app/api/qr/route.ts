@@ -9,10 +9,40 @@ export async function GET(request: NextRequest) {
   const rawUrl = searchParams.get("url");
   const format = searchParams.get("format") || "png";
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const targetUrl = rawUrl || (code ? `${siteUrl}/r/${encodeURIComponent(code)}` : `${siteUrl}/workshop`);
+  // Priority order for resolving base site URL:
+  // 1. Explicit rawUrl query param (highest specificity)
+  // 2. process.env.NEXT_PUBLIC_SITE_URL (if configured and not localhost)
+  // 3. Vercel production or deployment domain
+  // 4. Request host headers (works transparently for build60.vercel.app or custom domains)
+  // 5. Fallback localhost
+  let targetUrl = rawUrl;
+
+  if (!targetUrl) {
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+    if (!siteUrl || siteUrl.includes("localhost")) {
+      if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        siteUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+      } else if (process.env.VERCEL_URL) {
+        siteUrl = `https://${process.env.VERCEL_URL}`;
+      } else {
+        const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+        if (host && !host.includes("localhost")) {
+          const proto = request.headers.get("x-forwarded-proto") || "https";
+          siteUrl = `${proto}://${host}`;
+        }
+      }
+    }
+
+    siteUrl = (siteUrl || "http://localhost:3000").replace(/\/$/, "");
+    targetUrl = code ? `${siteUrl}/r/${encodeURIComponent(code)}` : `${siteUrl}/workshop`;
+  }
 
   try {
+    const cacheControl = targetUrl.includes("localhost")
+      ? "no-store, no-cache, must-revalidate"
+      : "public, max-age=3600, stale-while-revalidate=86400";
+
     if (format === "svg") {
       const svg = await QRCode.toString(targetUrl, {
         type: "svg",
@@ -27,7 +57,7 @@ export async function GET(request: NextRequest) {
       return new NextResponse(svg, {
         headers: {
           "Content-Type": "image/svg+xml",
-          "Cache-Control": "public, max-age=86400, stale-while-revalidate=43200",
+          "Cache-Control": cacheControl,
         },
       });
     }
@@ -47,7 +77,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(Uint8Array.from(pngBuffer), {
       headers: {
         "Content-Type": "image/png",
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=43200",
+        "Cache-Control": cacheControl,
       },
     });
   } catch (error) {

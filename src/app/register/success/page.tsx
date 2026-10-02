@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SuccessActions } from "@/components/SuccessActions";
 import { getActiveEvent } from "@/lib/events";
+import { getCanonicalSiteUrl } from "@/lib/site-url";
 import { CheckCircle } from "lucide-react";
 
 export const metadata = {
@@ -19,7 +20,7 @@ export default async function RegistrationSuccessPage({
 }) {
   const { code, name, college } = await searchParams;
   const event = await getActiveEvent();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = await getCanonicalSiteUrl();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F7F3] text-[#0B1220]">

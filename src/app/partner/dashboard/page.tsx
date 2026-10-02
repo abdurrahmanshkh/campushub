@@ -1,5 +1,6 @@
 import { requirePartner } from "@/lib/auth";
 import { getPartnerAnalyticsData } from "@/lib/analytics";
+import { getCanonicalSiteUrl } from "@/lib/site-url";
 import { PartnerNavbar } from "@/components/PartnerNavbar";
 import { Footer } from "@/components/Footer";
 import { DemoBadge } from "@/components/DemoBadge";
@@ -30,7 +31,7 @@ export default async function PartnerDashboardPage() {
     partner.code
   );
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = await getCanonicalSiteUrl();
   const progressPercent = Math.min(
     Math.round((analytics.totalRegistrations / analytics.target) * 100),
     100

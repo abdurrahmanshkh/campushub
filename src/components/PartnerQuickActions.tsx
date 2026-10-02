@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Copy, Check, ExternalLink, Download, Megaphone } from "lucide-react";
+import { useResolvedOrigin } from "@/lib/use-resolved-origin";
 
 interface PartnerQuickActionsProps {
   partnerCode: string;
@@ -19,7 +20,9 @@ export function PartnerQuickActions({
 }: PartnerQuickActionsProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
-  const partnerUrl = `${siteUrl}/r/${partnerCode}`;
+  const effectiveSiteUrl = useResolvedOrigin(siteUrl);
+
+  const partnerUrl = `${effectiveSiteUrl}/r/${partnerCode}`;
 
   const defaultWhatsAppCopy = `Hey! Our campus tech community (${clubName} at ${collegeName}) is bringing you a free live workshop:\n\nBuild Your First AI Project in 60 Minutes.\n\nYou'll build a practical AI project step by step.\n\nRegister here:\n${partnerUrl}\n\nFeel free to share this with anyone from your batch who's interested in AI.`;
 
@@ -96,7 +99,7 @@ export function PartnerQuickActions({
           </a>
 
           <a
-            href={`/api/qr?code=${partnerCode}&format=png`}
+            href={`/api/qr?code=${partnerCode}&url=${encodeURIComponent(partnerUrl)}&format=png`}
             download={`build60_${partnerCode}_qr.png`}
             className="h-10 px-4 rounded-lg border border-[#DCE1E8] hover:bg-gray-50 text-[#0B1220] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shrink-0"
           >
