@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0B1220;
+  --navy: #101A33;
+  --brand-blue: #2563EB;
+  --electric-blue: #3B82F6;
+  --offwhite: #F7F7F3;
+  --muted: #687386;
+  --border-subtle: #DCE1E8;
+  --success: #16803C;
+  --caution: #B7791F;
+  --lime: #C7F36B;
+}
+
+@theme {
+  --color-ink: #0B1220;
+  --color-navy: #101A33;
+  --color-brand-blue: #2563EB;
+  --color-electric-blue: #3B82F6;
+  --color-offwhite: #F7F7F3;
+  --color-muted: #687386;
+  --color-border-subtle: #DCE1E8;
+  --color-success: #16803C;
+  --color-caution: #B7791F;
+  --color-lime: #C7F36B;
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+}
+
+/* Subtle grid paper pattern */
+.bg-paper-grid {
+  background-color: #F7F7F3;
+  background-image: radial-gradient(#DCE1E8 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+}
+
+.bg-dark-grid {
+  background-color: #0B1220;
+  background-image: radial-gradient(rgba(220, 225, 232, 0.08) 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+}
+
+/* Fine hairline borders */
+.border-fine {
+  border: 1px solid #DCE1E8;
+}
+
+.border-fine-dark {
+  border: 1px solid rgba(220, 225, 232, 0.15);
+}
+
+/* Accessible outline focus ring */
+:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+/* Print styles for poster */
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
