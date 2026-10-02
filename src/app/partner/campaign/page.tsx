@@ -20,14 +20,16 @@ export default async function PartnerCampaignPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F7F3] text-[#0B1220]">
-      <PartnerNavbar
-        partnerName={partner.clubName}
-        partnerCode={partner.code}
-      />
+      <div className="no-print">
+        <PartnerNavbar
+          partnerName={partner.clubName}
+          partnerCode={partner.code}
+        />
+      </div>
 
       <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="space-y-1">
+          <div className="space-y-1 no-print">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#0B1220] text-[#C7F36B] text-xs font-mono font-bold uppercase tracking-wider">
               <Megaphone className="w-3.5 h-3.5" />
               <span>Campus Promotion Assets</span>
@@ -55,7 +57,9 @@ export default async function PartnerCampaignPage() {
         </div>
       </main>
 
-      <Footer />
+      <div className="no-print">
+        <Footer />
+      </div>
     </div>
   );
 }

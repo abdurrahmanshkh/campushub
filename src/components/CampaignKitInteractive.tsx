@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Smartphone,
   MessageSquare,
+  ExternalLink,
 } from "lucide-react";
 
 interface CampaignKitInteractiveProps {
@@ -38,7 +39,6 @@ export function CampaignKitInteractive({
 
   const partnerUrl = `${siteUrl}/r/${partnerCode}`;
   const qrPngUrl = `/api/qr?code=${partnerCode}&format=png`;
-  const qrSvgUrl = `/api/qr?code=${partnerCode}&format=svg`;
 
   const dateDisplay = eventDate && eventStartTime
     ? `${eventDate} at ${eventStartTime} ${eventTimezone}`
@@ -70,8 +70,319 @@ export function CampaignKitInteractive({
     setTimeout(() => setCopiedKey(null), 2500);
   }
 
-  function handlePrintPoster() {
-    window.print();
+  function generatePosterHtml() {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Build60 Poster - ${clubName}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #0B1220;
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .poster-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      border: 3px solid #0B1220;
+      border-radius: 16px;
+      padding: 36px 32px;
+      background: #ffffff;
+      box-shadow: none;
+    }
+    .poster-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #0B1220;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge-60 {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #2563EB;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-family: monospace;
+      font-size: 16px;
+    }
+    .brand-name {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand-name span {
+      color: #2563EB;
+    }
+    .live-badge {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      color: #1E3A8A;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: monospace;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .event-title {
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      margin: 0 0 18px 0;
+      color: #0B1220;
+    }
+    .partner-box {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+    }
+    .partner-label {
+      font-size: 10px;
+      font-family: monospace;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .partner-club {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0B1220;
+    }
+    .partner-college {
+      font-size: 13px;
+      color: #475569;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      border-top: 1px solid #E2E8F0;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 14px 0;
+      margin-bottom: 24px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .meta-item-label {
+      font-size: 10px;
+      color: #64748B;
+      text-transform: uppercase;
+    }
+    .meta-item-value {
+      font-weight: 700;
+      color: #0F172A;
+      margin-top: 2px;
+    }
+    .qr-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 22px;
+      text-align: center;
+    }
+    .qr-image {
+      width: 190px;
+      height: 190px;
+      border: 2px solid #0B1220;
+      padding: 8px;
+      background: #ffffff;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .qr-heading {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0B1220;
+    }
+    .qr-url {
+      font-size: 11px;
+      font-family: monospace;
+      color: #64748B;
+      margin-top: 2px;
+    }
+    .poster-footer {
+      text-align: center;
+      border-top: 1px solid #E2E8F0;
+      padding-top: 14px;
+      font-size: 11px;
+      font-family: monospace;
+      color: #64748B;
+    }
+    .print-bar {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 10px;
+      z-index: 1000;
+    }
+    .print-btn {
+      background: #0B1220;
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .close-btn {
+      background: #ffffff;
+      color: #0B1220;
+      border: 1px solid #CBD5E1;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    @media print {
+      .print-bar {
+        display: none !important;
+      }
+      body {
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-bar">
+    <button class="print-btn" onclick="window.print()">Print This Poster (A4)</button>
+    <button class="close-btn" onclick="window.close()">Close Window</button>
+  </div>
+  <div class="poster-container">
+    <div class="poster-header">
+      <div class="brand-block">
+        <div class="badge-60">60</div>
+        <div class="brand-name">BUILD<span>60</span></div>
+      </div>
+      <div class="live-badge">FREE LIVE WORKSHOP</div>
+    </div>
+
+    <h1 class="event-title">${eventTitle}</h1>
+
+    <div class="partner-box">
+      <div class="partner-label">HOSTED IN COLLABORATION WITH</div>
+      <div class="partner-club">${clubName}</div>
+      <div class="partner-college">${collegeName}</div>
+    </div>
+
+    <div class="meta-grid">
+      <div>
+        <div class="meta-item-label">SCHEDULE:</div>
+        <div class="meta-item-value">${dateDisplay}</div>
+      </div>
+      <div>
+        <div class="meta-item-label">FORMAT:</div>
+        <div class="meta-item-value">Online Interactive Sprint</div>
+      </div>
+    </div>
+
+    <div class="qr-section">
+      <img class="qr-image" src="${qrPngUrl}" alt="Scan QR to Register" />
+      <div class="qr-heading">Scan to Register Free</div>
+      <div class="qr-url">${partnerUrl}</div>
+    </div>
+
+    <div class="poster-footer">
+      A Hands-on Project Initiative for Final-Year Engineers &bull; Zero Tuition Fee
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
+  function handlePrintOnlyPoster() {
+    const existing = document.getElementById("build60-print-iframe");
+    if (existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "build60-print-iframe";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "none";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    doc.open();
+    doc.write(generatePosterHtml());
+    doc.close();
+
+    // Allow high-res QR code image to decode, then trigger isolated print
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      }, 2000);
+    }, 350);
+  }
+
+  function handleOpenDedicatedPoster() {
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(generatePosterHtml());
+      printWindow.document.close();
+      printWindow.focus();
+    }
   }
 
   return (
@@ -79,8 +390,8 @@ export function CampaignKitInteractive({
       {/* ========================================================
           A4 POSTER GENERATOR PREVIEW
           ======================================================== */}
-      <div className="p-6 sm:p-8 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#DCE1E8]">
+      <div className="p-6 sm:p-8 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-6 poster-outer-wrapper">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#DCE1E8] no-print">
           <div>
             <span className="text-xs font-mono text-[#2563EB] uppercase font-bold tracking-wider">
               Asset 01 &bull; Printable Notice Board Poster
@@ -89,18 +400,30 @@ export function CampaignKitInteractive({
               A4 Campus Event Poster
             </h3>
             <p className="text-xs text-[#687386]">
-              Pre-rendered with your club name and high-contrast scannable QR code
+              Pre-rendered with your club name and high-contrast scannable QR code &bull;{" "}
+              <span className="text-emerald-700 font-medium">Print-optimized: Prints only the poster</span>
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={handlePrintPoster}
-              className="h-9 px-3.5 rounded-lg bg-[#0B1220] hover:bg-[#101A33] active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              onClick={handlePrintOnlyPoster}
+              className="h-9 px-3.5 rounded-lg bg-[#0B1220] hover:bg-[#101A33] active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              title="Prints only this A4 poster, excluding the website layout"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print Poster (A4)</span>
+              <Printer className="w-3.5 h-3.5 text-[#C7F36B]" />
+              <span>Print Poster</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenDedicatedPoster}
+              className="h-9 px-3.5 rounded-lg border border-[#DCE1E8] bg-white hover:bg-gray-50 text-[#0B1220] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Open a clean standalone poster view ready to print or save as PDF"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-[#2563EB]" />
+              <span>View Poster</span>
             </button>
 
             <a
@@ -109,22 +432,16 @@ export function CampaignKitInteractive({
               className="h-9 px-3.5 rounded-lg border border-[#DCE1E8] hover:bg-gray-50 text-[#0B1220] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Download PNG QR</span>
-            </a>
-
-            <a
-              href={qrSvgUrl}
-              download={`build60_${partnerCode}_qr.svg`}
-              className="h-9 px-3.5 rounded-lg border border-[#DCE1E8] hover:bg-gray-50 text-[#0B1220] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download SVG QR</span>
+              <span>Download QR</span>
             </a>
           </div>
         </div>
 
         {/* Poster Printable Container */}
-        <div className="max-w-md mx-auto p-8 rounded-xl bg-white border-2 border-[#0B1220] shadow-md text-[#0B1220] print:border-none print:shadow-none print:p-0 space-y-6">
+        <div
+          id="build60-campaign-poster"
+          className="max-w-md mx-auto p-8 rounded-xl bg-white border-2 border-[#0B1220] shadow-md text-[#0B1220] space-y-6"
+        >
           {/* Poster Header */}
           <div className="flex items-center justify-between border-b-2 border-[#0B1220] pb-4">
             <div className="flex items-center gap-2">
@@ -202,7 +519,7 @@ export function CampaignKitInteractive({
       {/* ========================================================
           WHATSAPP & INSTAGRAM STORY SECTION
           ======================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
         {/* WhatsApp Card */}
         <div className="p-6 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-4 flex flex-col justify-between">
           <div>
@@ -283,7 +600,7 @@ export function CampaignKitInteractive({
       {/* ========================================================
           LINKEDIN & STUDENT EMAIL SECTION
           ======================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
         {/* LinkedIn Post */}
         <div className="p-6 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-4 flex flex-col justify-between">
           <div>
@@ -367,7 +684,7 @@ export function CampaignKitInteractive({
       </div>
 
       {/* Campus Short Announcement (Discord / Telegram) */}
-      <div className="p-6 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-4">
+      <div className="p-6 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-4 no-print">
         <div className="flex items-center justify-between pb-3 border-b border-[#DCE1E8]">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-purple-600" />
@@ -403,7 +720,7 @@ export function CampaignKitInteractive({
       {/* ========================================================
           FACULTY SUPPORT TOOL (Prompt Section 28)
           ======================================================== */}
-      <div id="faculty-tool" className="p-6 sm:p-8 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-5">
+      <div id="faculty-tool" className="p-6 sm:p-8 rounded-xl bg-white border border-[#DCE1E8] shadow-sm space-y-5 no-print">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#DCE1E8]">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-blue-50 text-[#2563EB]">

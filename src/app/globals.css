@@ -56,14 +56,67 @@
   outline-offset: 2px;
 }
 
-/* Print styles for poster */
+/* Print styles for A4 campus poster */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
   body {
     background: #ffffff !important;
+    color: #0B1220 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
+
+  /* Hide all website chrome, navigation, headers and footers */
+  nav,
+  header,
+  footer,
+  aside,
   .no-print {
     display: none !important;
   }
+
+  /* Hide parent wrappers shadow and background */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  /* Target the A4 poster container */
+  #build60-campaign-poster {
+    display: block !important;
+    max-width: 620px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: 3px solid #0B1220 !important;
+    border-radius: 12px !important;
+    padding: 32px !important;
+    background: #ffffff !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Reset outer wrapper card in print mode */
+  .poster-outer-wrapper {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    background: transparent !important;
+  }
+
+  /* Hide everything inside CampaignKitInteractive except the poster container */
+  .poster-outer-wrapper > *:not(#build60-campaign-poster) {
+    display: none !important;
+  }
+
   .print-only {
     display: block !important;
   }
